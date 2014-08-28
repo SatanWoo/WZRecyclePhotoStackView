@@ -12,8 +12,8 @@ WZRecyclePhotoStackView就是模拟这种生活中的情形而产生的。
 
 ###这个StackView的优势是什么？###
 - 采用了内存池的设计方式，对于非图片开销，只生成了两个(可配置个数)的容器循环复用
-- 避免了一次性加载数据的内存开销和时间损耗，通过可配置的方式将大量的数据通过多次添加加载进内存中。
-同时通过预取的方式将这些新的数据自动补充进需要显示的位置。
+- 避免了一次性加载数据的内存开销和时间损耗，通过可配置的方式将大量的数据通过多次小部分添加加载进内存中。
+同时通过预取的方式将这些新的数据自动补充进需要显示的位置。（在预取过程中您完全可以按照需要修改为异步回调形式）
 - 支持左滑、右滑操作。右滑跳过当前照片，将照片置为底部，最后查看。左滑将底部照片拉回顶部，设置为当前查看。
 - 高度定制化
 
@@ -38,10 +38,7 @@ WZRecyclePhotoStackView就是模拟这种生活中的情形而产生的。
         
         @end
         
-        
-        
         @protocol WZPhotoStackViewDelegate <NSObject>
-        
         @optional
         - (void)didSkipPhoto:(UIImage *)photo       inStackView:(WZPhotoStackView *)stackView;
         - (void)didBringBackPhoto:(UIImage *)photo  inStackView:(WZPhotoStackView *)stackView;
