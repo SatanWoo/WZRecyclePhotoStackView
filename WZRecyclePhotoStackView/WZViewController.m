@@ -106,7 +106,7 @@ const NSUInteger WZPhotoLoadCount = 10;
 }
 
 #pragma mark - WZPhotoStackViewDataSource
-- (UIImage *)photoForSkipStack:(WZPhotoStackView *)stackView
+- (UIImage *)photoForSkipQueueInStack:(WZPhotoStackView *)stackView
 {
     if ([self.skipPhotos count] == 0) return nil;
     
@@ -115,7 +115,7 @@ const NSUInteger WZPhotoLoadCount = 10;
     return skipPhoto;
 }
 
-- (UIImage *)photoForRatingStack:(WZPhotoStackView *)stackView
+- (UIImage *)photoForRatingQueueInStack:(WZPhotoStackView *)stackView
 {
     if ([self.photos count] == 0) return nil;
     
@@ -124,28 +124,28 @@ const NSUInteger WZPhotoLoadCount = 10;
     return photo;
 }
 
-- (NSUInteger)numberOfRatingPhotos
+- (NSUInteger)numberOfRatingPhotosInStack:(WZPhotoStackView *)stackView
 {
     return [self.photos count];
 }
 
-- (NSUInteger)numberOfSkipPhotos
+- (NSUInteger)numberOfSkipPhotosInStack:(WZPhotoStackView *)stackView
 {
     return [self.skipPhotos count];
 }
 
-- (BOOL)canFetchMoreData
+- (BOOL)canFetchMoreDataInStack:(WZPhotoStackView *)stackView
 {
     return !self.noMoreData;
 }
 
-- (void)fetchMoreDataFromCoreData
+- (void)fetchMoreDataFromCoreDataInStack:(WZPhotoStackView *)stackView
 {
     NSLog(@"refill the photos");
     [self loadData];
 }
 
-- (void)fetchSkipPhotos
+- (void)fetchSkipPhotosInStack:(WZPhotoStackView *)stackView
 {
     if ([self.skipPhotos count] != 0) {
         [self.photos addObjectsFromArray:self.skipPhotos];
@@ -154,29 +154,29 @@ const NSUInteger WZPhotoLoadCount = 10;
 }
 
 #pragma mark - WZPhotoStackViewDelegate
-- (void)didSkipPhoto:(UIImage *)photo
+- (void)didSkipPhoto:(UIImage *)photo inStackView:(WZPhotoStackView *)stackView
 {
     NSLog(@"skip photos");
     [self.skipPhotos addObject:photo];
 }
 
-- (void)didBringBackPhoto:(UIImage *)photo
+- (void)didBringBackPhoto:(UIImage *)photo inStackView:(WZPhotoStackView *)stackView
 {
     if (photo == nil) return;
     [self.photos insertObject:photo atIndex:0];
 }
 
-- (void)didRatePhotoAsLike:(UIImage *)photo
+- (void)didRatePhotoAsLike:(UIImage *)photo inStackView:(WZPhotoStackView *)stackView
 {
     NSLog(@"haha you like it");
 }
 
-- (void)didRatePhotoAsHate:(UIImage *)photo
+- (void)didRatePhotoAsHate:(UIImage *)photo inStackView:(WZPhotoStackView *)stackView
 {
     NSLog(@"woops you hate it");
 }
 
-- (void)didFinishRateAllPhotos
+- (void)didFinishRateAllPhotosInStackView:(WZPhotoStackView *)stackView
 {
     self.stackView.hidden = YES;
     NSLog(@"You have finish photo stack");

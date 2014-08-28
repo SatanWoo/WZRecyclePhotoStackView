@@ -70,8 +70,10 @@
 
 - (void)initCardView
 {
-    if ([self.dataSource numberOfRatingPhotos] == 0) {
-        [self.delegate didFinishRateAllPhotos];
+    if ([self.dataSource numberOfRatingPhotosInStack:self] == 0) {
+        if (self.delegate && [self.delegate respondsToSelector:@selector(didFinishRateAllPhotosInStackView:)]) {
+            [self.delegate didFinishRateAllPhotosInStackView:self];
+        }
         return;
     }
     
@@ -80,8 +82,8 @@
     WZCardView *firstCard = (WZCardView *)[self.cardPools objectAtIndex:0];
     firstCard.hidden = NO;
    
-    [firstCard setPhoto:[self.dataSource photoForRatingStack:self]];
-    [secondCard setPhoto:[self.dataSource photoForRatingStack:self]];
+    [firstCard setPhoto:[self.dataSource photoForRatingQueueInStack:self]];
+    [secondCard setPhoto:[self.dataSource photoForRatingQueueInStack:self]];
 }
 
 #pragma mark - Action
@@ -110,7 +112,7 @@
     if (y < -offsetY) {
         [self setStatus:WZPhotoStackStatusLike];
     } else if (y >  offsetY) {
-        [self setStatus:WZPhotoStackStatusAverage];
+        [self setStatus:WZPhotoStackStatusHate];
     } else if (x > 0) {
         [self setStatus:WZPhotoStackStatusSkip];
     } else {
@@ -128,7 +130,7 @@
             else                [self finishLikeStatus];
             break;
         
-        case WZPhotoStackStatusAverage:
+        case WZPhotoStackStatusHate:
             if (self.isPanning) [self animateRateStatus];
             else                [self finishAverageStatus];
             break;
@@ -167,7 +169,11 @@
     } completion:^(BOOL finished) {
         [self sendSubviewToBack:currentCard];
         [currentCard restoreNormalCard];
-        [self.delegate didRatePhotoAsLike:currentCard.photo];
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(didRatePhotoAsLike:inStackView:)]) {
+            [self.delegate didRatePhotoAsLike:currentCard.photo inStackView:self];
+        }
+        
         [self updateCards];
     }];
 }
@@ -181,7 +187,11 @@
     } completion:^(BOOL finished) {
         [self sendSubviewToBack:currentCard];
         [currentCard restoreNormalCard];
-        [self.delegate didRatePhotoAsHate:currentCard.photo];
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(didRatePhotoAsHate:inStackView:)]) {
+            [self.delegate didRatePhotoAsHate:currentCard.photo inStackView:self];
+        }
+        
         [self updateCards];
     }];
 }
@@ -212,7 +222,11 @@
                          [UIView animateWithDuration:0.15f animations:^{
                              [currentCard restoreNormalCard];
                          } completion:^(BOOL finished) {
-                             [self.delegate didSkipPhoto:currentCard.photo];
+                             if (self.delegate &&
+                                 [self.delegate respondsToSelector:@selector(didSkipPhoto:inStackView:)]) {
+                                 [self.delegate didSkipPhoto:currentCard.photo inStackView:self];
+                             }
+                             
                              [self updateCards];
                          }];
                      }];
@@ -221,12 +235,12 @@
 - (void)animatePullBackStatus
 {
     if (!self.isPulling) {
-        if ([self.dataSource numberOfSkipPhotos] == 0) {
+        if ([self.dataSource numberOfSkipPhotosInStack:self] == 0) {
             return;
         }
         
         self.isPulling = YES;
-        [self.skipPullBackCard setPhoto:[self.dataSource photoForSkipStack:self]];
+        [self.skipPullBackCard setPhoto:[self.dataSource photoForSkipQueueInStack:self]];
     }
     
     for (WZCardView *card in self.cardPools) {
@@ -269,23 +283,27 @@
     
     WZCardView *card = self.cardPools[self.cardPoolsUsingIndex];
     [card restoreNormalCard];
-    [card setPhoto:[self.dataSource photoForRatingStack:self]];
+    [card setPhoto:[self.dataSource photoForRatingQueueInStack:self]];
     if (card.photo == nil) {
-        if (![self.dataSource canFetchMoreData] && [self.dataSource numberOfRatingPhotos] == 0) {
-            if ([self.dataSource numberOfSkipPhotos] == 0 && otherCard.photo == nil) {
-                [self.delegate didFinishRateAllPhotos];
+        if (![self.dataSource canFetchMoreDataInStack:self] &&
+            [self.dataSource numberOfRatingPhotosInStack:self] == 0) {
+            
+            if ([self.dataSource numberOfSkipPhotosInStack:self] == 0 && otherCard.photo == nil) {
+                if (self.delegate && [self.delegate respondsToSelector:@selector(didFinishRateAllPhotosInStackView:)]) {
+                    [self.delegate didFinishRateAllPhotosInStackView:self];
+                }
                 return;
             } else {
-                [self.dataSource fetchSkipPhotos];
-                [card setPhoto:[self.dataSource photoForRatingStack:self]];
+                [self.dataSource fetchSkipPhotosInStack:self];
+                [card setPhoto:[self.dataSource photoForRatingQueueInStack:self]];
             }
         }
     }
     
     self.cardPoolsUsingIndex = 1 - self.cardPoolsUsingIndex;
     
-    if ([self.dataSource numberOfRatingPhotos] <= 2 && [self.dataSource canFetchMoreData]) {
-        [self.dataSource fetchMoreDataFromCoreData];
+    if ([self.dataSource numberOfRatingPhotosInStack:self] <= 2 && [self.dataSource canFetchMoreDataInStack:self]) {
+        [self.dataSource fetchMoreDataFromCoreDataInStack:self];
     }
 }
 
@@ -294,7 +312,10 @@
     WZCardView *otherCard = self.cardPools[1 - self.cardPoolsUsingIndex];
     WZCardView *currentCard = self.cardPools[self.cardPoolsUsingIndex];
     
-    [self.delegate didBringBackPhoto:otherCard.photo];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(didBringBackPhoto:inStackView:)]) {
+        [self.delegate didBringBackPhoto:otherCard.photo inStackView:self];
+    }
+    
     [otherCard setPhoto:currentCard.photo];
     [currentCard setPhoto:photo];
 }
