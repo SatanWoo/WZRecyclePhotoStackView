@@ -18,35 +18,37 @@ WZRecyclePhotoStackView就是模拟这种生活中的情形而产生的。
 - 高度定制化
 
 ###使用###
-    @protocol WZPhotoStackViewDataSource <NSObject>
-    @required
-    - (UIImage *)photoForSkipStack;
-    - (UIImage *)photoForRatingStack;
-    - (NSUInteger)numberOfRatingPhotos;
-    - (NSUInteger)numberOfSkipPhotos;
-    - (BOOL)canFetchMoreData;
-    - (void)fetchMoreDataFromCoreData;
-    - (void)fetchSkipPhotos;
-    
-    @end
-    
-    typedef NS_ENUM(NSUInteger, WZPhotoStackStatus)
-    {
-        WZPhotoStackStatusLike = 0,
-        WZPhotoStackStatusSkip = 1,
-        WZPhotoStackStatusPullBack = 2,
-        WZPhotoStackStatusAverage = 3
-    };
-    
-    @protocol WZPhotoStackViewDelegate <NSObject>
-    
-    @optional
-    - (void)didSkipPhoto:(UIImage *)photo;
-    - (void)didBringBackPhoto:(UIImage *)photo;
-    - (void)didRatePhotoAsLike:(UIImage *)photo;
-    - (void)didRatePhotoAsHate:(UIImage *)photo;
-    - (void)didFinishRateAllPhotos;
-    @end
+        typedef NS_ENUM(NSUInteger, WZPhotoStackStatus)
+        {
+            WZPhotoStackStatusLike = 0,    //上滑 作为喜欢
+            WZPhotoStackStatusSkip = 1,    //右滑 作为将照片置于底部
+            WZPhotoStackStatusPullBack = 2,//左滑 作为将底部照片取回
+            WZPhotoStackStatusHate = 3     //下滑 作为讨厌
+        };
+        
+        @protocol WZPhotoStackViewDataSource <NSObject>
+        @required
+        - (UIImage *)photoForSkipQueueInStack:(WZPhotoStackView *)stackView;
+        - (UIImage *)photoForRatingQueueInStack:(WZPhotoStackView *)stackView;
+        - (NSUInteger)numberOfRatingPhotosInStack:(WZPhotoStackView *)stackView;
+        - (NSUInteger)numberOfSkipPhotosInStack:(WZPhotoStackView *)stackView;
+        - (BOOL)canFetchMoreDataInStack:(WZPhotoStackView *)stackView;
+        - (void)fetchMoreDataFromCoreDataInStack:(WZPhotoStackView *)stackView;
+        - (void)fetchSkipPhotosInStack:(WZPhotoStackView *)stackView;
+        
+        @end
+        
+        
+        
+        @protocol WZPhotoStackViewDelegate <NSObject>
+        
+        @optional
+        - (void)didSkipPhoto:(UIImage *)photo       inStackView:(WZPhotoStackView *)stackView;
+        - (void)didBringBackPhoto:(UIImage *)photo  inStackView:(WZPhotoStackView *)stackView;
+        - (void)didRatePhotoAsLike:(UIImage *)photo inStackView:(WZPhotoStackView *)stackView;
+        - (void)didRatePhotoAsHate:(UIImage *)photo inStackView:(WZPhotoStackView *)stackView;
+        - (void)didFinishRateAllPhotosInStackView:(WZPhotoStackView *)stackView;
+        @end
 
 只要在您的viewcontroller中添加如下代码即可
 
