@@ -20,8 +20,8 @@ WZRecyclePhotoStackView就是模拟这种生活中的情形而产生的。
 ###使用###
     @protocol WZPhotoStackViewDataSource <NSObject>
     @required
-    - (UIImage *)photoForSkipStack:(WZPhotoStackView *)stackView;
-    - (UIImage *)photoForRatingStack:(WZPhotoStackView *)stackView;
+    - (UIImage *)photoForSkipStack;
+    - (UIImage *)photoForRatingStack;
     - (NSUInteger)numberOfRatingPhotos;
     - (NSUInteger)numberOfSkipPhotos;
     - (BOOL)canFetchMoreData;
