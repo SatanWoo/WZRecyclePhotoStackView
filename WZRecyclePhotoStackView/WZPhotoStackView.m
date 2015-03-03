@@ -24,6 +24,8 @@
 - (void)initializeWithFrame:(CGRect)frame;
 - (void)initCardView;
 - (void)swapDataWithPhoto:(UIImage *)photo;
+
+- (void)animationPhotoWithBlock:(void(^)(WZCardView *currentCard))animationBlock completion:(void(^)(WZCardView *currentCard))completionBlock;
 @end
 
 @implementation WZPhotoStackView
@@ -84,6 +86,21 @@
    
     [firstCard setPhoto:[self.dataSource photoForRatingQueueInStack:self]];
     [secondCard setPhoto:[self.dataSource photoForRatingQueueInStack:self]];
+}
+
+- (void)animationPhotoWithBlock:(void (^)(WZCardView *))animationBlock completion:(void (^)(WZCardView *))completionBlock
+{
+    WZCardView *currentCard = self.cardPools[self.cardPoolsUsingIndex];
+    [UIView animateWithDuration:.25f animations:^{
+        if (animationBlock) animationBlock(currentCard);
+    } completion:^(BOOL finished) {
+        [self sendSubviewToBack:currentCard];
+        [currentCard restoreNormalCard];
+        
+        if (completionBlock) completionBlock(currentCard);
+        
+        [self updateCards];
+    }];
 }
 
 #pragma mark - Action
@@ -162,37 +179,25 @@
 
 - (void)finishLikeStatus
 {
-    WZCardView *currentCard = self.cardPools[self.cardPoolsUsingIndex];
-    [UIView animateWithDuration:.25f animations:^{
+    [self animationPhotoWithBlock:^(WZCardView *currentCard){
         currentCard.center = CGPointMake([UIScreen mainScreen].bounds.size.width + currentCard.frame.size.width,
                                          -currentCard.frame.size.height);
-    } completion:^(BOOL finished) {
-        [self sendSubviewToBack:currentCard];
-        [currentCard restoreNormalCard];
-        
+    } completion:^(WZCardView *currentCard) {
         if (self.delegate && [self.delegate respondsToSelector:@selector(didRatePhotoAsLike:inStackView:)]) {
             [self.delegate didRatePhotoAsLike:currentCard.photo inStackView:self];
         }
-        
-        [self updateCards];
     }];
 }
 
 - (void)finishAverageStatus
 {
-    WZCardView *currentCard = self.cardPools[self.cardPoolsUsingIndex];
-    [UIView animateWithDuration:0.25f animations:^{
+    [self animationPhotoWithBlock:^(WZCardView *currentCard) {
         currentCard.center = CGPointMake(-currentCard.frame.size.width ,
                                          [UIScreen mainScreen].bounds.size.height + currentCard.frame.size.height);
-    } completion:^(BOOL finished) {
-        [self sendSubviewToBack:currentCard];
-        [currentCard restoreNormalCard];
-        
+    } completion:^(WZCardView *currentCard) {
         if (self.delegate && [self.delegate respondsToSelector:@selector(didRatePhotoAsHate:inStackView:)]) {
             [self.delegate didRatePhotoAsHate:currentCard.photo inStackView:self];
         }
-        
-        [self updateCards];
     }];
 }
 
